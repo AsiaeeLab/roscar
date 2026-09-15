@@ -32,6 +32,26 @@ source snapshots, package versions, and resampling counts are recorded in each
 run directory. Completed jobs can be reused with an identical configuration and
 source fingerprint. See `simulations/README.md` for the output schema.
 
+### Current full run
+
+The analysis launched on September 15, 2026 uses 80 workers, 500 point
+replications, and B=200 on the first 100 replications in each of 87 settings.
+The measured projection was 69.88 hours with 200 inference replications and
+37.01 hours with 100. The runtime inputs and calculation are in
+`results/validated/runtime/`. The latter design uses the study's allowed first
+compute reduction. Its complete results remain pending.
+
+The durable equivalent of this simulation stage is:
+
+```sh
+Rscript paper/simulations/long-run.R --workers=80 --bootstrap-reps=100 --projected-original-hours=69.8838967013889
+```
+
+The driver records its PID and state in `simulations/full/driver_status.dcf`,
+resumes checkpoints on an identical restart, and writes figures and summaries
+at completion. The 200-replication anomaly check is complete; its tables and
+Monte Carlo errors are in `results/validated/simulations/anomaly/`.
+
 STAR has its own source and data fingerprints and checkpoints. Full mode uses
 30 source constructions at each of five trial fractions and 500 bootstrap
 resamples, with intercept, ridge, and lasso calibration. See

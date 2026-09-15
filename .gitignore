@@ -31,3 +31,4 @@ paper/applications/star/data/
 *.log
 paper/simulations/*.rds
 paper/teaching/quick/
+paper/simulations/runtime/

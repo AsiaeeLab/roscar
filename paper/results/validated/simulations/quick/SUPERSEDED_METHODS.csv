@@ -1,0 +1,3 @@
+"scenario","method","reason"
+5,"interaction_ols","Superseded: original quick fit omitted transformed effect-basis main terms. Corrected code includes them; final full run and separate targeted B20 check use corrected fits."
+5,"pooled","Superseded: original quick fit omitted transformed effect-basis main terms. Corrected code includes them; final full run and separate targeted B20 check use corrected fits."
