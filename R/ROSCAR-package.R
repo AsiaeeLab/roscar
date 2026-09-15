@@ -15,6 +15,7 @@
 #' @importFrom methods formalArgs
 #' @importFrom stats coef cor lm predict rbinom rnorm runif
 #' @importFrom utils modifyList
+#' @importFrom splines ns
 #'
 #' @examples
 #' data(os, rct, tau)

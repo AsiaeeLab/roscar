@@ -1,0 +1,18 @@
+bibentry(bibtype = "Article",
+  title = "Improving Precision of RCT-Based CATE Estimation using Data Borrowing with Double Calibration",
+  author = c(person("Amir", "Asiaee"), person("Chiara", "Di Gravio"),
+             person("Cole", "Beck"), person("Yuting", "Mei"),
+             person("Samhita", "Pal"), person("Jared D.", "Huling")),
+  year = "2026", journal = "arXiv preprint", note = "arXiv:2306.17478, version 3",
+  url = "https://arxiv.org/abs/2306.17478")
+bibentry(bibtype = "Article",
+  title = "Improving RCT-Based CATE Estimation Under Covariate Mismatch via Double Calibration",
+  author = c(person("Samhita", "Pal"), person("Jared D.", "Huling"), person("Amir", "Asiaee")),
+  year = "2026", journal = "arXiv preprint", note = "arXiv:2603.17066",
+  url = "https://arxiv.org/abs/2603.17066")
+bibentry(bibtype = "InProceedings",
+  title = "Improving RCT-Based Treatment Effect Estimation Under Covariate Mismatch via Calibrated Alignment",
+  author = c(person("Amir", "Asiaee"), person("Samhita", "Pal")),
+  year = "2026", booktitle = "Proceedings of the 42nd Conference on Uncertainty in Artificial Intelligence",
+  note = "Linear CALM implementation; arXiv:2603.19186",
+  url = "https://arxiv.org/abs/2603.19186")

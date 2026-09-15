@@ -1,32 +1,29 @@
-Package: ROSCAR
+Package: roscar
 Type: Package
-Title: Improve the efficiency of conditional average treatment
-effect (CATE) estimation in RCTs by leveraging large observational
-studies (OS) while preserving the unbiasedness of RCT estimates (\cite{arXiv:2306.17478}).
-Version: 1.0
-Date: 2025-12-16
-Authors@R: 
-    c(person(given = "Amir",
-             family = "Asiaeetaheri",
-             role = c("aut", "cre"),
-             email = "amir.asiaeetaheri@vumc.org"),
-      person(given = "Cole",
-             family = "Beck",
-             role = "aut",
-             email = "cole.beck@vumc.org",
-             comment = c(ORCID = "0000-0002-6849-6255")),
-      person("Samhita", "Pal", role = "aut"),
-      person("Chiara", "Di Gravio", role = "aut"),
-      person("Jared", "Huling", role = "ctb"))
-Description: More about what it does (maybe more than one line).
-Depends: R (>= 4.1)
-Imports: glmnet, methods
-Suggests: caret, MASS, randomForest
-License: GPL (>=3)
-RoxygenNote: 7.3.2
+Title: Calibrated External Predictions for Trial Treatment Effects
+Version: 0.1.0.9000
+Authors@R: c(
+    person("Amir", "Asiaeetaheri", role = c("aut", "cre"),
+           email = "amir.asiaeetaheri@vumc.org"),
+    person("Cole", "Beck", role = "aut",
+           comment = c(ORCID = "0000-0002-6849-6255")),
+    person("Samhita", "Pal", role = "aut"),
+    person("Chiara", "Di Gravio", role = "aut"),
+    person("Yuting", "Mei", role = "ctb"),
+    person("Jared", "Huling", role = "ctb"))
+Description: Estimate conditional treatment effects in randomized trials using
+    external outcome predictions calibrated within randomized treatment arms.
+    Provides matched-covariate, single-arm, imputation, and linear partial
+    least squares recipes, grouped cross-fitting, conditional trial bootstrap
+    inference, and held-out prediction diagnostics. Retains the original
+    linear R-OSCAR engine of Asiaee and colleagues <arXiv:2306.17478>.
+Depends: R (>= 4.1.0)
+Imports: glmnet, methods, stats, utils, graphics, grDevices, splines
+Suggests: caret, MASS, randomForest, mgcv, ranger, SuperLearner, grf,
+    testthat (>= 3.0.0), knitr, rmarkdown, roxygen2, pkgload, foreign, digest, jsonlite, ggplot2, patchwork
+License: GPL-3
 Encoding: UTF-8
+Config/testthat/edition: 3
+VignetteBuilder: knitr
 NeedsCompilation: no
-Author: Amir Asiaeetaheri [aut, cre],
-  Cole Beck [aut] (<https://orcid.org/0000-0002-6849-6255>)
-Maintainer: Amir Asiaeetaheri <amir.asiaeetaheri@vumc.org>
-
+Config/roxygen2/version: 8.0.0

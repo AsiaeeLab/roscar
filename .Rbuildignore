@@ -10,3 +10,8 @@
 ^\.zenodo.json$
 ^\.git$
 ^\.github$
+^paper$
+^DEVIATIONS\.md$
+^PROGRESS\.md$
+^FINAL_REPORT\.md$
+^README\.Rmd$

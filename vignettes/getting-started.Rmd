@@ -1,0 +1,134 @@
+---
+title: "Borrow predictions, then calibrate in the trial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Borrow predictions, then calibrate in the trial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(roscar)
+```
+
+## A complete worked pass
+
+The external data provide an outcome prediction. Randomized treatment and trial
+outcomes still supply the treatment-effect estimate. This example follows
+Algorithm 1 using four independent standard-normal covariates and known treatment
+probability one half. The trial outcome is
+
+\[
+Y=1+X_1+X_2+A(0.5+0.5X_1)/2+\varepsilon,
+\]
+
+where treatment is coded as minus or plus one and the error is standard normal.
+The independent external outcome follows the same model with a level shift of
+0.5. The analytic conditional treatment effect is \(0.5+0.5X_1\).
+
+```{r example-data}
+sim <- simulate_scenario("teaching", n_r = 200, n_o = 2000,
+                         seed = 20260914)
+learners <- list(external = learner_ols(), calibration = learner_intercept(),
+                 trial = learner_ols(), final = learner_ols())
+fit <- borrow_cate(sim$trial, sim$ext, recipe = "A", learners = learners,
+                   basis = ~X1, K = 5, seed = 20260914)
+```
+
+The external regressions fit each treatment arm independently. Within each trial
+training fold, intercept calibration estimates how far the external outcome
+level is displaced. Its prediction is evaluated on the held-out fold. The final
+regression uses an intercept and `X1`, the prespecified effect basis.
+
+```{r intermediate-rows}
+h <- head(fit$heldout, 6)
+h$external_prediction <- ifelse(h$A == 1, h$q_plus, h$q_minus)
+h[, c("fold", "A", "pi", "external_prediction", "q_plus", "q_minus",
+      "mu_cal_plus", "mu_cal_minus", "baseline", "pseudo_outcome")]
+```
+
+The personalized baseline combines calibrated arm predictions with the
+opposite-arm assignment probabilities. With equal allocation it is their
+average. The pseudo-outcome is \(A(Y-\widehat m)/\pi\), where `pi` is the
+probability of the treatment actually received. Multiplying by treatment gives
+the sign; dividing by one half supplies the factor of two.
+
+```{r predictions}
+data.frame(X1 = c(-1, 0, 1), analytic_truth = sim$truth_profiles,
+           recipe_A = predict(fit, sim$profiles),
+           trial_only = predict(fit$trial_only, sim$profiles))
+c(recipe_A = var(fit$heldout$pseudo_outcome),
+  trial_only = var(fit$heldout$psi_trial))
+```
+
+## Conditional bootstrap intervals
+
+The publication example reruns the complete trial pipeline 500 times, resampling
+independent trial units and keeping the external data fixed. Repeated copies of
+one sampled unit stay together in the cross-fitting folds. The same resamples
+also refit the trial-only comparator. This code is left unevaluated during a
+routine documentation build because the reproduction script saves the complete
+500-resample result separately.
+
+```{r bootstrap, eval=FALSE}
+fit <- borrow_cate(sim$trial, sim$ext, recipe = "A", learners = learners,
+                   basis = ~X1, K = 5, B = 500, grid = sim$profiles,
+                   seed = 20260914)
+fit$bootstrap$intervals
+```
+
+<!-- BEGIN VERIFIED TEACHING OUTPUT -->
+The recorded 500-resample run gives the following pointwise 95% intervals.
+
+| X1 | Analytic truth | Recipe A (95% interval) | Trial-only (95% interval) | Width ratio |
+|---:|---:|:---|:---|---:|
+| -1 | 0 | 0.195 (-0.212, 0.603) | 0.207 (-0.203, 0.608) | 1.005 |
+| 0 | 0.5 | 0.724 (0.454, 1.019) | 0.752 (0.467, 1.044) | 0.978 |
+| 1 | 1 | 1.252 (0.838, 1.622) | 1.296 (0.825, 1.697) | 0.898 |
+
+The held-out pseudo-outcome variance is 4.508 for Recipe A and 4.591 for the paired trial-only fit. Width ratios above one indicate increased uncertainty; ratios below one indicate reduced uncertainty.
+
+<!-- END VERIFIED TEACHING OUTPUT -->
+
+From the repository root, `source("paper/teaching/run.R"); run_teaching()` writes
+the call, the first six intermediate rows, all three profile estimates and
+intervals, paired interval-width ratios, and the four pseudo-outcome variances
+to `paper/teaching/output/`. Analytic truths are printed separately. A width ratio
+above one reports an increase in uncertainty. One dataset does not establish
+coverage or a typical gain from borrowing.
+
+## External controls and bundled data
+
+Recipe B borrows a single external arm. Its other outcome model is learned
+entirely from the trial. The package also retains the original bundled datasets
+and the `cate_model()` interface.
+
+```{r bundled}
+data("rct", "os", package = "roscar")
+trial <- trial_data(rct$X, rct$A, rct$Y, pi = 0.5)
+external <- external_data(os$X, os$A, os$Y)
+fit_B <- borrow_cate(trial, external, recipe = "B", arm_ext = -1,
+                     learners = learners, basis = ~X1, K = 5, seed = 42)
+head(predict(fit_B, trial$X))
+```
+
+## Covariate mismatch and diagnostics
+
+Recipe C predicts the external-only covariates from shared covariates, then
+calibrates the transported predictions in the trial. Recipe D uses the linear
+CALM outcome-supervised embedding. Its pooled external PLS encoder excludes
+treatment. Use the same final effect basis for comparisons.
+
+```{r mismatch, eval=FALSE}
+mismatch <- simulate_scenario(4, rho = 0.8, seed = 42)
+fit_C <- borrow_cate(mismatch$trial, mismatch$ext, recipe = "C",
+                     basis = mismatch$basis, seed = 42)
+fit_D <- borrow_cate(mismatch$trial, mismatch$ext, recipe = "D",
+                     basis = mismatch$basis, seed = 42)
+plot(diagnose(fit_C))
+```
+
+Inspect held-out arm losses and the borrowing diagnostic alongside uncertainty
+and effect estimates. Better external prediction alone does not guarantee a
+better conditional treatment-effect estimate.

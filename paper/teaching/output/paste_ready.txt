@@ -1,0 +1,46 @@
+Section 4.3 teaching example; independent synthetic data
+
+sim <- simulate_scenario("teaching", n_r = 200, n_o = 2000, seed = 20260914)
+fit <- borrow_cate(sim$trial, sim$ext, recipe = "A",
+  learners = list(external = learner_ols(), calibration = learner_intercept(),
+                  trial = learner_ols(), final = learner_ols()),
+  basis = ~X1, K = 5, B = 500, grid = sim$profiles, seed = 20260914)
+
+First six held-out rows:
+ fold  A  pi external_prediction   q_plus  q_minus mu_cal_plus mu_cal_minus
+    5  1 0.5            3.272391 3.272391 2.268408   2.8456195      1.45076
+    2 -1 0.5            2.376339 3.394789 2.376339   2.9537213      1.67718
+    4  1 0.5            0.471685 0.471685 0.847318   0.0152534      0.11587
+    1  1 0.5            4.753401 4.753401 3.405954   4.3222117      2.76261
+    3  1 0.5            3.482467 3.482467 2.641157   2.9984437      2.00907
+    4 -1 0.5            2.610683 3.936603 2.610683   3.4801720      1.87924
+  baseline pseudo_outcome
+ 2.1481891        2.15590
+ 2.3154503       -2.74626
+ 0.0655615        2.82513
+ 3.5424129        2.73339
+ 2.5037551        3.27270
+ 2.6797035        2.42947
+
+Profile estimates and analytic truths (truth is not an estimate):
+ X1 truth recipe_A trial_only recipe_A_lower recipe_A_upper trial_only_lower
+ -1   0.0 0.194686   0.207350      -0.212447       0.603175        -0.203278
+  0   0.5 0.723510   0.751923       0.454240       1.018841         0.467353
+  1   1.0 1.252334   1.296495       0.838043       1.621696         0.824870
+ trial_only_upper width_ratio
+         0.607926    1.005446
+         1.044414    0.978408
+         1.697372    0.898168
+
+Pseudo-outcome variances on identical held-out trial rows:
+              baseline heldout_pseudo_outcome_variance
+                  None                        16.77194
+            Trial-only                         4.59135
+ Uncalibrated external                         5.81969
+   Calibrated external                         4.50756
+
+Bootstrap resamples attempted: 500
+Bootstrap resamples successful: 500
+Intervals are pointwise percentile confidence intervals conditional on this external sample.
+A width ratio above one means increased uncertainty; below one means reduced uncertainty.
+This single example does not estimate coverage or typical efficiency gains.

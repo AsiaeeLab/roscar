@@ -1,80 +1,125 @@
+# roscar
 
-Install and load the R package.
+Calibrate external outcome predictions in a randomized trial, then estimate
+conditional treatment effects from randomized pseudo-outcomes. This package
+supports the tutorial **Borrow Predictions, Not Causal Effects**.
 
-``` r
-if(!requireNamespace('ROSCAR', quietly = TRUE)) {
-  remotes::install_github('couthcommander/ROSCAR')
-}
-library(ROSCAR)
+## Install
+
+```r
+remotes::install_github("AsiaeeLab/roscar")
 ```
 
-Generate some data (both RCT and OS). In this case, we’ll introduce
-covariate mismatch.
+From a local checkout, use `R CMD INSTALL .`.
 
-``` r
-set.seed(2025)
-dat <- simulate_rct_and_os_data(
-  n_r = 300, n_o = 1000, support_fraction = 1/20,
-  covariate_effect = c(Z = 2/3, V = 1),
-  frac_U = 0.3, frac_V = 0.3
+R >= 4.1 and glmnet are required. The optional learners use mgcv, ranger, and
+SuperLearner. The causal forest comparator requires grf. The main branch is a development version; a release tag will identify the final paper version.
+
+## Example: external controls only (Recipe B)
+
+```r
+library(roscar)
+s <- simulate_scenario("teaching", n_r = 200, n_o = 2000, seed = 20260914)
+ext <- external_data(s$ext$X[s$ext$A == -1, ],
+                     Y = s$ext$Y[s$ext$A == -1])
+fit <- borrow_cate(
+  s$trial, ext, recipe = "B", basis = ~ X1, K = 5, seed = 20260914,
+  learners = list(external = learner_ols(), calibration = learner_intercept(),
+                  trial = learner_ols())
 )
-rct_os <- build_data(dat = dat)
+fit
 ```
 
-Run and evaluate models.
-
-``` r
-mod <- cate_model(rct_os$RCT, rct_os$OS)
-head(model_pred(mod))
+```text
+roscar: B; 200 trial rows; 5 grouped folds
+Effect basis: ~X1
 ```
 
-    ##        naive     racer     oscar   r_oscar
-    ## 1 -0.5629661 -1.079727 -1.470010 -1.784453
-    ## 2  0.7013522  1.745146  2.370394  2.409035
-    ## 3  2.8328786  2.588514  2.996943  2.873513
-    ## 4 -1.6335755 -1.183861 -1.538120 -1.931878
-    ## 5 -1.2256149 -1.768328 -1.155722 -1.030950
-    ## 6  1.5433424  1.384840  1.976091  2.388333
+The complete generated output, point estimates, and 500-resample intervals for
+the two-arm teaching example are in `paper/teaching/output/`.
 
-``` r
-model_eval(mod, rct_os$tau)
+```r
+grid <- s$profiles
+boot <- bootstrap_cate(fit, B = 500, grid = grid, seed = 20260915)
+boot$intervals
+plot(diagnose(fit, B = 500, seed = 20260915))
 ```
 
-    ##             rmse rank_corr accuracy_itr cal_intercept cal_slope
-    ## naive   1.511083 0.7071487    0.7966667   0.008642961 1.1356766
-    ## racer   1.385921 0.7641734    0.8066667  -0.143827935 1.1413424
-    ## oscar   1.367726 0.7677134    0.8066667  -0.161038795 1.0111305
-    ## r_oscar 1.366732 0.7693170    0.8000000  -0.078221907 0.9613386
+## Data and modeling contract
 
-Repeat with only shared covariates.
+* `trial_data(X, A, Y, pi, id, strata)` accepts 0/1 or -1/+1 treatment.
+  **`pi` is the probability of the observed arm.** With positive-arm probability
+  `p`, supply `pi = ifelse(A == 1, p, 1 - p)`. Without `pi`, observed arm
+  proportions within design strata are used and must permit both arms.
+* `personalized_baseline(plus, minus, pi)` instead takes the **positive-arm**
+  probability, available as `trial$p_plus`. Opposite-arm weights are essential.
+* `X` must be finite numeric data. Encode categorical predictors explicitly and
+  harmonize columns across sources. Specify shared/trial-only/external-only
+  blocks for mismatch. Independent unit IDs can have multiple rows; folds and
+  bootstrap copies remain grouped. This is not a validated general extension to
+  cluster-randomized trials with few clusters or cross-source dependence.
+* Learners supply `fit` and `predict`. Gaussian predictions are residual-scale
+  corrections; the caller adds the offset. Binomial predictions are link-scale
+  corrections. Final pseudo-outcomes always use a squared-loss regression.
+* The final `basis` is a prespecified one-sided formula with an intercept.
+  Trial nuisance fitting and tuning exclude each evaluation unit. The final
+  regression uses all held-out pseudo-outcomes; honest evaluation of that CATE
+  regression itself requires an additional outer split.
+* Recipe C defaults to an offset correction. At any prediction grid the
+  preliminary contrast averages the fold models; the same rule is repeated in
+  bootstrap. Held-out arm quantities are stored separately in `fit$heldout`.
+* `B = 0` is the computational API default. Paper examples use `B = 500`.
+  Bootstrap intervals are pointwise, conditional on the external source, and
+  include full trial refitting. Failures are reported; no coverage is assumed
+  for arbitrary regularized final models. `vcov(fit)` is an explicitly labeled
+  fixed-nuisance sandwich approximation for a linear final regression.
 
-``` r
-rct_os <- build_data(dat = dat, RCT_imp_method = NULL, OS_imp_method = NULL)
-mod_sh <- cate_model(rct_os$RCT, rct_os$OS)
-model_eval(mod_sh, rct_os$tau)
+## Recipes and comparisons
+
+| Recipe | External resource | Mapping |
+|---|---|---|
+| A | Both arms, matched predictors | Identity |
+| B | One arm | Calibrate that arm; estimate the other in the trial |
+| C | Shared and external-only predictors | Ridge imputation, MR-OSCAR offset correction |
+| D | Shared and external-only predictors | Supervised external PLS, ridge imputation, linear CALM |
+
+D uses pooled external outcome supervision with treatment excluded from the
+encoder. `pls_by_arm = TRUE` is an optional alternative. Dimensions are selected
+from 1–3 using external prediction error. `method = "shared_only"` provides
+SR-OSCAR. Neural CALM and B-CALM are cited but not implemented.
+
+`compare_methods()` includes RACER, no/uncalibrated/oracle augmentation, trial
+interaction OLS, R-learner, grf causal forest, interaction prognostic adjustment,
+and pooling. Unsupported configurations and missing optional packages return
+explicit status and error messages. `diagnose()` separates arm losses,
+pseudo-outcome variance, calibration, support, and weighted prediction evidence.
+
+## Reproduce the paper
+
+```sh
+Rscript paper/make.R --quick --workers=48
 ```
 
-    ##             rmse rank_corr accuracy_itr cal_intercept cal_slope
-    ## naive   1.757951 0.5436260    0.6833333    0.02921390  1.002343
-    ## racer   1.785060 0.5313090    0.7000000   -0.06055680  1.168131
-    ## oscar   1.736864 0.5691734    0.7166667   -0.22671934  1.085618
-    ## r_oscar 1.730254 0.5679761    0.7300000   -0.01768978  1.047507
+See the simulation and application README files for full settings and seeds.
+STAR is reconstructed from primary CC0 Dataverse data, with column-by-column
+verification against the published extract; the unlicensed extract is never
+redistributed. Source overlap and incomplete covariates are audited explicitly.
 
-Try a quick experiment.
+Greenlight code reads `GPS_CLEAN_DIR` and requires an output directory outside
+all repositories. It is run by the data-authorized investigator. No protected
+data, derived datasets, synthetic mimic, or participant-level output is shipped.
 
-``` r
-iter <- 10
-set.seed(iter)
-l <- vector('list', iter)
-for(i in seq_along(l)) {
-  dat <- simulate_rct_and_os_data(n_r=250, n_o=500)
-  rct_os <- build_data(dat = dat)
-  mod <- cate_model(rct_os$RCT, rct_os$OS)
-  l[[i]] <- model_eval(mod, dat$y_r$tau)
-}
-# mean RMSE for each method
-rowMeans(vapply(l, \(i) i[,'rmse'], numeric(4)))
-```
+## Provenance and compatibility
 
-    ##     naive     racer     oscar   r_oscar 
-    ## 1.3424593 0.3153759 0.2095290 0.2080282
+This checkout preserves the full history of
+[Cole Beck's ROSCAR](https://github.com/couthcommander/ROSCAR).
+The original `cate_model()`/`model_roscar()` engine remains available with its
+original 0/1 coding and in-sample default. The tutorial API has different
+cross-fitting, tuning, and final-regression defaults; it does not promise equal
+predictions under unequal settings.
+
+One-arm estimation and diagnostics derive from the frozen
+[JMLR reproduction archive](https://github.com/AsiaeeLab/r-oscar).
+MR-OSCAR follows Pal, Huling, and Asiaee's algorithm; linear CALM follows
+Asiaee and Pal's external PLS and ridge implementation. `citation("roscar")`
+provides the references. GPL-3.
