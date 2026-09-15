@@ -1,0 +1,16 @@
+"q","calibration","fits_attempted","fits_successful","fits_failed","fits_with_bootstrap_audit","bootstrap_attempted","bootstrap_successful"
+0.1,"intercept",1,1,0,1,20,20
+0.1,"lasso",1,1,0,1,20,20
+0.1,"ridge",1,1,0,1,20,20
+0.2,"intercept",1,1,0,1,20,20
+0.2,"lasso",1,1,0,1,20,20
+0.2,"ridge",1,1,0,1,20,20
+0.3,"intercept",1,1,0,1,20,20
+0.3,"lasso",1,1,0,1,20,20
+0.3,"ridge",1,1,0,1,20,20
+0.4,"intercept",1,1,0,1,20,20
+0.4,"lasso",1,1,0,1,20,20
+0.4,"ridge",1,1,0,1,20,20
+0.5,"intercept",1,1,0,1,20,20
+0.5,"lasso",1,1,0,1,20,20
+0.5,"ridge",1,1,0,1,20,20

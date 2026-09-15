@@ -1,0 +1,4 @@
+CC0 1.0 Universal: public domain dedication.
+https://creativecommons.org/publicdomain/zero/1.0/legalcode
+License recorded by Harvard Dataverse hdl:1902.1/10766.
+The license applies to the primary data, not the comparison GitHub CSV.

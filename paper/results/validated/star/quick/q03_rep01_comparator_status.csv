@@ -1,0 +1,4 @@
+"method","status","error","interval_method"
+"procova_interaction","unavailable","Comparison outcome design is rank deficient: the declared treatment interactions are not identifiable; retain the unavailable result or prespecify a simpler basis.","unavailable"
+"rlearner","success",NA,"pointwise conditional trial percentile bootstrap"
+"causal_forest","success",NA,"grf pointwise asymptotic normal interval"

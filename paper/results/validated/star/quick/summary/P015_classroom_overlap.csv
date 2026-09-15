@@ -1,0 +1,6 @@
+"q","seed","trial_classrooms","external_classrooms","shared_classrooms","trial_fraction_in_shared_classroom","resampling_unit","repetition"
+0.1,20261915,135,230,130,0.971830985915493,"school:teacher (classroom proxy)",1
+0.2,20262915,154,228,147,0.959558823529412,"school:teacher (classroom proxy)",1
+0.3,20263915,157,229,150,0.959667852906287,"school:teacher (classroom proxy)",1
+0.4,20264915,158,227,149,0.94959495949595,"school:teacher (classroom proxy)",1
+0.5,20265915,158,225,147,0.939625260235947,"school:teacher (classroom proxy)",1

@@ -1,0 +1,2 @@
+"mode","jobs_complete","full_design_complete","requested_repetitions_per_q","requested_bootstrap_B","jobs_requested","jobs_completed","recipe_fits_recorded","recipe_fits_successful","recipe_fits_failed"
+"quick",TRUE,FALSE,1,20,5,5,15,15,0

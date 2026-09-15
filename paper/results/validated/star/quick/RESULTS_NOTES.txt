@@ -1,0 +1,11 @@
+Primary provenance: Harvard Dataverse hdl:1902.1/10766 (CC0 1.0).
+Reference: cross-fitted trial-only CATE fitted to full rural/inner-city cohort; estimated, not known truth.
+School-specific full-cohort arm proportions are estimated assignment probabilities.
+Classroom resampling uses school:teacher as proxy; no separate classroom identifier in extract.
+External data stay fixed despite shared classrooms; conditional intervals omit uncertainty from cross-source dependence.
+First-grade free lunch is a descriptive subgroup; pretreatment timing was not established.
+A rank-deficient interaction comparator is unavailable: the declared treatment interactions lack arm-specific support. No effect terms are dropped; inspect effect_basis_support and effect_basis_rank.
+Missing birth dates use outcome-free median imputation plus a missingness indicator.
+Bootstrap B: 20
+Repetitions per q: 1
+The first recorded repetition at each q is the prespecified figure repetition.

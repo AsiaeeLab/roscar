@@ -1,0 +1,16 @@
+"q","repetition","calibration","status","error","bootstrap_attempted","bootstrap_successful"
+0.1,1,"intercept","success","",20,20
+0.1,1,"ridge","success","",20,20
+0.1,1,"lasso","success","",20,20
+0.2,1,"intercept","success","",20,20
+0.2,1,"ridge","success","",20,20
+0.2,1,"lasso","success","",20,20
+0.3,1,"intercept","success","",20,20
+0.3,1,"ridge","success","",20,20
+0.3,1,"lasso","success","",20,20
+0.4,1,"intercept","success","",20,20
+0.4,1,"ridge","success","",20,20
+0.4,1,"lasso","success","",20,20
+0.5,1,"intercept","success","",20,20
+0.5,1,"ridge","success","",20,20
+0.5,1,"lasso","success","",20,20

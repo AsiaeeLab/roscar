@@ -38,10 +38,12 @@ if ("simulations" %in% steps) {
 if ("star" %in% steps) {
   source("paper/applications/star/run.R")
   source("paper/applications/star/figures.R")
+  source("paper/applications/star/summarize.R")
   star_output <- if (quick) "paper/applications/star/results-quick" else "paper/applications/star/results-full"
   invisible(star_run(quick = quick, workers = min(workers, 24L), output_dir = star_output))
   star_figures(star_output)
   star_diagnostic_figures(star_output)
+  star_summarize(star_output)
 }
 if ("gps" %in% steps) stop("Greenlight is investigator-run only: see paper/applications/gps/README.md. This public entrypoint never reads protected data.")
 if ("summary" %in% steps) {

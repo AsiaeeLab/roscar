@@ -118,3 +118,25 @@ This reporting step does not refit or change any estimator. In the five-job
 parallel quick check, 17 common profiles were retained and two were unavailable
 in the q=0.2 sampled trial. These small-sample support checks are specific to each
 construction and must be repeated over all 30 repetitions.
+
+## Aggregate summary and completion finalizer
+
+`star_summarize()` in `summarize.R` produces P015/P017/P024 aggregate tables and
+neutral result text from a completed run. It labels quick checks explicitly;
+the full-design flag requires all five fractions, 30 repetitions per fraction,
+three calibration learners and 500 attempted bootstrap draws per fit. Across-run
+10th/90th percentiles describe repetition variability and are not confidence
+limits. The summary retains failed fits and unavailable comparisons.
+
+For a full analysis already running in a separate process, the following starts
+a detached local finalizer; replace `ANALYSIS_PID` with that process's PID:
+
+```sh
+Rscript paper/applications/star/finalize.R launch paper/applications/star/results-full ANALYSIS_PID
+```
+
+It freezes and checksums its summary sources, waits for `FINISHED.txt`, creates
+`results-full/summary/`, and refreshes the local paper results summary and its
+curated public aggregates. Status and logs are in `results-full/finalizer/`.
+If the analysis process exits without its completion marker, the finalizer
+records a failure. It does not rerun analyses or commit, push or publish results.

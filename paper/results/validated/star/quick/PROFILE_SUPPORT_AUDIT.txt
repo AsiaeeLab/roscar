@@ -1,0 +1,5 @@
+n_control/n_treated count each sampled trial's rows with the profile's sex, race and free-lunch pattern with an observed birth date.
+full_cohort_n_control/full_cohort_n_treated retain the original profile-source support counts.
+Profiles with fewer than 2 trial rows in either arm have unavailable estimates for every method.
+Audit source MD5: 5290bb14089980e3f2694c585af5a911
+Primary extract MD5: 8af8119251f1ba29d78d7520d98fbae1

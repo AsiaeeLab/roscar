@@ -1,0 +1,9 @@
+"source","geography","arm","Freq","q","seed"
+"external","rural_inner_city","-1",1443,0.1,20261915
+"trial","rural_inner_city","-1",169,0.1,20261915
+"external","urban_suburban","-1",801,0.1,20261915
+"trial","urban_suburban","-1",0,0.1,20261915
+"external","rural_inner_city","1",479,0.1,20261915
+"trial","rural_inner_city","1",115,0.1,20261915
+"external","urban_suburban","1",243,0.1,20261915
+"trial","urban_suburban","1",0,0.1,20261915

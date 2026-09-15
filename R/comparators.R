@@ -151,8 +151,10 @@ compare_methods <- function(trial, ext = NULL,
       study <- c(rep(0, length(trial$Y)), rep(1, length(ext$Y)))
       ww <- c(ww, rep(1, length(ext$Y)))
     }
-    # Unpenalized outcome main effects and declared treatment-by-basis interactions.
-    main <- cbind(`(Intercept)` = 1, nx)
+    # Every treatment interaction needs its corresponding outcome main term,
+    # including transformed basis terms such as sin(X). Otherwise a shared
+    # nonlinear prognosis can be misallocated to an A=1 interaction.
+    main <- cbind(bx, nx)
     if (!is.null(study)) main <- cbind(main, study = study)
     # A linear external score can be redundant with declared basis main effects.
     # Remove only redundant nuisance columns; every effect interaction is kept.

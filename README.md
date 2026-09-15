@@ -100,7 +100,9 @@ pseudo-outcome variance, calibration, support, and weighted prediction evidence.
 Rscript paper/make.R --quick --workers=48
 ```
 
-See the simulation and application README files for full settings and seeds.
+See [the reproduction guide](paper/README.md) for commands and the complete
+manuscript artifact map, and [the results summary](paper/results/RESULTS_SUMMARY.md)
+for completed analyses and pending runs.
 STAR is reconstructed from primary CC0 Dataverse data, with column-by-column
 verification against the published extract; the unlicensed extract is never
 redistributed. Source overlap and incomplete covariates are audited explicitly.

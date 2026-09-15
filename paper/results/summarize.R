@@ -1,5 +1,7 @@
 # Assemble only completed artifacts; absence is a reported status, never a zero.
-write_results_summary <- function(root = ".", output = file.path(root, "paper/results/RESULTS_SUMMARY.md")) {
+write_results_summary <- function(root = ".", output = file.path(root, "paper/results/RESULTS_SUMMARY.md"), source_root = root) {
+  source(file.path(source_root, "paper/results/curate.R"), local = TRUE)
+  curate_public_results(root)
   md_table <- function(d, digits = 5) {
     for (nm in names(d)) if (is.numeric(d[[nm]])) d[[nm]] <- format(d[[nm]], digits = digits, trim = TRUE)
     d[] <- lapply(d, function(x) {x <- as.character(x); x[is.na(x)] <- "unavailable"; gsub("[|\r\n]", " ", x)})
@@ -9,6 +11,10 @@ write_results_summary <- function(root = ".", output = file.path(root, "paper/re
   }
   latest <- function(parent, filename) {
     paths <- list.files(file.path(root, parent), paste0("^", filename, "$"), recursive = TRUE, full.names = TRUE)
+    if (!length(paths) && startsWith(parent, "paper/simulations/")) {
+      cached <- sub("paper/simulations/", "paper/results/validated/simulations/", parent, fixed = TRUE)
+      paths <- list.files(file.path(root, cached), paste0("^", filename, "$"), recursive = TRUE, full.names = TRUE)
+    }
     if (!length(paths)) return(NULL)
     paths[which.max(file.info(paths)$mtime)]
   }
@@ -38,7 +44,7 @@ write_results_summary <- function(root = ".", output = file.path(root, "paper/re
     label <- if (!is.null(full)) "Full-mode completed table" else "Quick-mode execution check only"
     body <- c(body, paste0(label, ": `", sub(paste0(root, "/"), "", use, fixed = TRUE), "`."), "")
     d <- read.csv(use)
-    cols <- intersect(c("scenario", "n_r", "variant", "rho", "gamma", "kappa", "calibration", "method", "target", "attempted", "successful", "rmse", "rmse_mcse", "coverage", "coverage_mcse", "width_ratio", "width_ratio_mcse"), names(d))
+    cols <- intersect(c("scenario", "n_r", "variant", "rho", "gamma", "kappa", "treated_nuisance", "calibration", "method", "target", "attempted", "successful", "interval_attempted", "interval_successful", "rmse", "rmse_mcse", "coverage", "coverage_mcse", "width_ratio", "width_ratio_mcse"), names(d))
     selected <- d[d$target %in% c("integrated", "profile_zero") & d$method %in% c("A", "B", "C", "D", "racer"), cols, drop = FALSE]
     body <- c(body, md_table(selected), "", "Each scenario CSV retains the complete comparator list, attempted/successful counts, target definitions, biases, Monte Carlo errors, and unavailable methods. Coverage is conditional on successful intervals; interval failures are also counted. Interpret benefit and harm together with these denominators.", "")
     if (is.null(full)) body <- c(body, "Full 500-replication point performance and the final coverage subset are pending. The quick table cannot fill the final manuscript result placeholders.", "")
@@ -46,11 +52,24 @@ write_results_summary <- function(root = ".", output = file.path(root, "paper/re
   body <- c(body, "## P015–P019 and STAR block of P024: public application", "",
     "Primary Dataverse reconstruction matches all 43 substantive columns of the comparison extract. The first-grade small/regular analysis yields 4,218 students with all three outcome scores. This is complete-outcome selection; some baseline covariates remain missing. Source scripts report the missingness handling and exact source-construction denominators.", "",
     "Teacher IDs occur in one treatment arm only and are not effect modifiers. The quick construction shows extensive shared classrooms across trial and external sources (approximately 94–97% of trial students). Grouping trial resampling by classroom does not remove cross-source dependence when external fits are held fixed; conditional intervals therefore carry a substantive dependence limitation.", "",
-    "Quick-run estimates are stored separately under `paper/applications/star/results-quick/`. Full 30-repetition-per-fraction, 500-resample results should be used only after their completion and review. Rare covariate levels can make the declared prognostic-adjustment treatment interactions unidentifiable; the comparator status table records these unavailable fits.", "",
+    "Completed public aggregate snapshots are in `paper/results/validated/`. Quick-run estimates are stored separately under `paper/applications/star/results-quick/`. Full 30-repetition-per-fraction, 500-resample results should be used only after their completion and review. Rare covariate levels can make the declared prognostic-adjustment treatment interactions unidentifiable; the comparator status table records these unavailable fits.", "",
     "## P020–P026: protected Greenlight application", "",
-    "Not run by the coding agent. The investigator-run scripts read GPS_CLEAN_DIR, require locally verified design/endpoint information, and export aggregate tables and figures to GPS_OUTPUT_DIR outside repositories. The cleaned files omit timing/interpolation metadata, so those checks require source records or an investigator attestation. No Greenlight outcome numbers are supplied here. No protected files or synthetic mimic are distributed.", "",
+    "Not run. The investigator-run scripts read GPS_CLEAN_DIR, require locally verified design/endpoint information, and export aggregate tables and figures to GPS_OUTPUT_DIR outside repositories. The cleaned files omit timing/interpolation metadata, so those checks require source records or an investigator attestation. No Greenlight outcome numbers are supplied here. No protected files or synthetic mimic are distributed.", "",
     "## P001, P004–P008, P016, P021, P027–P028: software artifacts", "",
     "The implemented API, example calls, simulation registry, application scripts, generated argument table, and source/data provenance map are listed in paper/README.md. The GitHub fork preserves upstream history. A release tag and archive identifier remain pending until final numerical results and release checks are complete.")
+  star_modes <- c("full", "quick")
+  for (star_mode in star_modes) {
+    relative <- file.path("validated/star", star_mode, "summary")
+    star_summary <- file.path(root, "paper/results", relative, "RESULTS_SUMMARY.md")
+    if (!file.exists(star_summary)) next
+    lines <- readLines(star_summary)
+    lines <- sub("^## ", "#### ", lines)
+    lines <- sub("^# ", "### ", lines)
+    lines <- gsub("\\]\\(([^)]+)\\)", paste0("](", relative, "/\\1)"), lines)
+    position <- match("## P020–P026: protected Greenlight application", body)
+    body <- append(body, c(lines, ""), after = position - 1L)
+    break
+  }
   dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
   writeLines(body, output)
   invisible(output)
