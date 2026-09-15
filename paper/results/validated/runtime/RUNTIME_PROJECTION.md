@@ -7,4 +7,4 @@ For each setting, fit the two-point timing model T(B) = F + b*B. The per-resampl
 
 Total projected worker-seconds sum 500*F + inference_reps*200*b across the 87 settings. Divide by workers*3600 to obtain hours. The CSV inputs and formula make this projection reproducible.
 
-This assumes approximately linear throughput when changing worker count. Machine load, cache behavior, and method refitting can change actual runtime. The pilot uses the final core; the earlier quick run additionally exercises the initial integration version. No point-performance or coverage outcome enters the compute decision.
+This assumes approximately linear throughput when changing worker count. Machine load, cache behavior, and method refitting can change actual runtime. The pilot and quick runs use the source versions recorded at measurement time. The nonlinear comparator main-term correction followed these measurements, so the projection is approximate for the final implementation. No point-performance or coverage outcome enters the compute decision.
